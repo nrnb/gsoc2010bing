@@ -1,0 +1,2034 @@
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/MainPanel.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/MainPanel.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/MainPanel.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -16,15 +16,9 @@
+ //
+ package org.pathvisio.gui.swing;
+ 
+-import com.mammothsoftware.frwk.ddb.DropDownButton;
+-
+ import java.awt.BorderLayout;
+ import java.awt.Color;
+ import java.awt.Component;
+-import java.awt.Dimension;
+-import java.awt.Font;
+-import java.awt.GridBagConstraints;
+-import java.awt.GridBagLayout;
+ import java.awt.event.ActionEvent;
+ import java.awt.event.ActionListener;
+ import java.util.ArrayList;
+@@ -45,7 +39,6 @@
+ import javax.swing.JMenuItem;
+ import javax.swing.JOptionPane;
+ import javax.swing.JPanel;
+-import javax.swing.JPopupMenu;
+ import javax.swing.JScrollPane;
+ import javax.swing.JSplitPane;
+ import javax.swing.JTabbedPane;
+@@ -77,10 +70,8 @@
+ import org.pathvisio.view.VPathwayEvent;
+ import org.pathvisio.view.VPathwayListener;
+ 
++import com.mammothsoftware.frwk.ddb.DropDownButton;
+ 
+-
+-
+-
+ /**
+  * this is the contents of the main window in the WikiPathways applet,
+  * and contains the editor window, side panels, toolbar and menu.
+@@ -100,10 +91,6 @@
+ 	protected JTabbedPane sidebarTabbedPane;
+ 
+ 	protected JMenuBar menuBar;
+-	
+-	protected DropDownButton itemsDropDown;
+-	
+-	private ObjectsPane objectsPane;
+ 
+ 	private JTable propertyTable;
+ 
+@@ -200,16 +187,7 @@
+ 		pathwayScrollPane = new JScrollPane();
+ 		// set background color when no VPathway is loaded, override l&f because it is usually white.
+ 		pathwayScrollPane.getViewport().setBackground(Color.LIGHT_GRAY);
+-		
+-		objectsPane = new ObjectsPane(swingEngine);
+-		int numItemsPerRow = 10;
+-		objectsPane.addButtons(actions.newShapeActions, "Basic Shapes", numItemsPerRow);
+-		objectsPane.addButtons(actions.newCellularComponentActions, "Cellular components", numItemsPerRow);
+-		objectsPane.addButtons(actions.newMIMShapeActions, "MIM shapes", numItemsPerRow);
+-		objectsPane.addButtons(actions.newInteractionActions, "Basic interactions", numItemsPerRow);
+-		objectsPane.addButtons(actions.newRLInteractionActions, "Receptor/ligand", numItemsPerRow);
+-		objectsPane.addButtons(actions.newMIMInteractionActions, "MIM interactions", numItemsPerRow);
+-		
++
+ 		propertyTable = new JTable(model) {
+ 
+ 			public TableCellRenderer getCellRenderer(int row, int column) {
+@@ -253,7 +231,6 @@
+ 		});
+ 
+ 		sidebarTabbedPane = new JTabbedPane();
+-		sidebarTabbedPane.addTab("Objects", objectsPane);
+ 		sidebarTabbedPane.addTab( "Properties", propertiesScrollPane );
+ 		sidebarTabbedPane.addTab( "Backpage", new JScrollPane(backpagePane) );
+ 
+@@ -303,11 +280,9 @@
+ 				zs=zs.replace("%","");
+ 				try {
+ 					double zf = Double.parseDouble(zs);
+-					if(zf > 0){ // Ignore negative number
+-						ZoomAction za = new ZoomAction(swingEngine.getEngine(), zf);
+-						za.setEnabled(true);
+-						za.actionPerformed(e);
+-					}
++					ZoomAction za = new ZoomAction(swingEngine.getEngine(), zf);
++					za.setEnabled(true);
++					za.actionPerformed(e);
+ 				} catch (Exception ex) {
+ 					// Ignore bad input
+ 				}
+@@ -352,13 +327,13 @@
+ 			} else { //This is the line/receptor sub-menu
+ 				String icon = "newlinemenu.gif";
+ 				String tooltip = "Select a line to draw";
+-				
++
+ 				if(submenu.equals("receptors")) { //Next one is receptors
+ 					icon = "newlineshapemenu.gif";
+ 					tooltip = "Select a receptor/ligand to draw";
+ 				} else {
+ 					submenu = "receptors";
+-				}				
++				}
+ 				DropDownButton lineButton = new DropDownButton(
+ 						new ImageIcon(Resources.getResourceURL(icon)));
+ 				lineButton.setToolTipText(tooltip);
+@@ -369,7 +344,7 @@
+ 				lineButton.setEnabled(false);
+ 			}
+ 		}
+-		
++
+ 		tb.addSeparator();
+ 
+ 		addToToolbar(actions.layoutActions);
+@@ -519,98 +494,4 @@
+ 	{
+ 		backpagePane.dispose();
+ 	}
+-
+-	/**
+-	 * hook of the objects tab
+-	 */
+-	public ObjectsPane getObjectsPane()
+-	{
+-		return objectsPane;
+-	}
+-	
+-	/**
+-	 * hook of the drop-down menu
+-	 */
+-	public DropDownButton getItemsDropDown()
+-	{
+-		return itemsDropDown;
+-	}
+-	
+-	/**
+-	 * add section label to the drop-down menu
+-	 */
+-	public void addLabel(DropDownButton lineButton, String s)
+-	{
+-		JLabel title = new JLabel(s);
+-		title.setForeground(new Color(50,21,110));
+-		title.setFont(new Font("sansserif", Font.BOLD, 12));
+-		JPanel titlePanel = new JPanel();
+-		titlePanel.setBackground(new Color(221,231,238));
+-		titlePanel.add(title);		
+-		lineButton.addComponent(titlePanel);
+-	}
+-	
+-	/**
+-	 * add item buttons to the drop-down menu, multiple items per row
+-	 */
+-	public void addButtons(Action [] aa, DropDownButton lineButton, int numItemPerRow)
+-	{
+-		JPanel pane = new JPanel();
+-		pane.setBackground(Color.white);
+-		pane.setLayout(new GridBagLayout());
+-		GridBagConstraints c = new GridBagConstraints();
+-		c.gridheight = 1;
+-		c.gridwidth = 1;
+-		c.fill = c.NONE;
+-		c.weightx = 1.0;
+-		c.weighty = 1.0;
+-		
+-		final JPopupMenu popup = lineButton.getPopupMenu();
+-
+-		int i=0;
+-		for(Action a : aa) {
+-			c.gridx = i%numItemPerRow;
+-			c.gridy = i/numItemPerRow;		
+-			// clicking a button should cause the popupmenu disappear, any better way to do it?
+-			final ImageButton button= new ImageButton(a);
+-			button.addActionListener(new ActionListener() { 
+-				  public void actionPerformed(ActionEvent e) {
+-					  button.setContentAreaFilled(false);
+-					  popup.setVisible(false);
+-				  } 
+-			});
+-			pane.add(button,c);
+-			i++;
+-		}
+-
+-		// fill the rest spaces using dummy button when there are less than numItemPerRow items, any better way?
+-		for(;i < numItemPerRow;i++){
+-			c.gridx = i;
+-			JButton dummy = new JButton();
+-			Dimension dim = new Dimension(25,0);
+-			dummy.setPreferredSize(dim);
+-			dummy.setContentAreaFilled(false);
+-			pane.add(dummy,c);
+-		}
+-		
+-		lineButton.addComponent(pane);
+-	}
+-	
+-	/**
+-	 * add item buttons and section label to the drop-down menu
+-	 */
+-	public void addButtons(Action [] aa, DropDownButton lineButton, int numItemPerRow, String label){
+-		addLabel(lineButton,label);
+-		addButtons(aa,lineButton,numItemPerRow);
+-	}
+-	
+-	/**
+-	 * add items with text to the drop-down menu (e.g. -> arrow)
+-	 */
+-	public void addMenuItems(Action [] aa, DropDownButton lineButton)
+-	{
+-		for(Action a : aa) {
+-			lineButton.addComponent(new JMenuItem(a));
+-		}
+-	}
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/CommonActions.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/CommonActions.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/CommonActions.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -55,7 +55,6 @@
+ import org.pathvisio.view.VPathway;
+ import org.pathvisio.view.VPathwayElement;
+ import org.pathvisio.view.ViewActions;
+-import org.pathvisio.view.MIMShapes; //lb
+ 
+ /**
+  * A collection of {@link Action}s that may be used throughout the program (e.g. in
+@@ -110,18 +109,6 @@
+ 	public final Action[] layoutActions;
+ 
+ 	public final Action[][] newElementActions;
+-	
+-	public final Action[] newShapeActions;	
+-	
+-	public final Action[] newCellularComponentActions;
+-	
+-	public final Action[] newMIMShapeActions;
+-	
+-	public final Action[] newInteractionActions;
+-	
+-	public final Action[] newRLInteractionActions;
+-	
+-	public final Action[] newMIMInteractionActions;
+ 
+ 	private final SwingEngine swingEngine;
+ 
+@@ -196,157 +183,36 @@
+ 							new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.OVAL))
+ 					},
+ 					new Action[] {
+-							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-									"arrow", LineStyle.SOLID, LineType.LINE, LineType.ARROW, ConnectorType.STRAIGHT)
+-							),
++							new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ARC))
+ 					},
+-					//new Action[] {
+-						//	new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ARC))
+-					//},
+-					//new Action[] {
+-						//	new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.BRACE))
+-					//},
+ 					new Action[] {
++							new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.BRACE))
++					},
++					new Action[] {
+ 							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+ 									"tbar", LineStyle.SOLID, LineType.LINE, LineType.TBAR, ConnectorType.STRAIGHT
+ 							))
+ 					},
+-//					new Action[] {
+-//							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-//									"ligandround", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_ROUND, ConnectorType.STRAIGHT)
+-//							),
+-//							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-//									"receptorround", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_ROUND, ConnectorType.STRAIGHT)
+-//							),
+-//							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-//									"ligandsquare", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_SQUARE, ConnectorType.STRAIGHT)
+-//							),
+-//							new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-//									"receptorsquare", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)
+-//							),
+-//					},
+ 					new Action[] {
++							new NewElementAction(e, new DefaultTemplates.LineTemplate(
++									"ligandround", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_ROUND, ConnectorType.STRAIGHT)
++							),
++							new NewElementAction(e, new DefaultTemplates.LineTemplate(
++									"receptorround", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_ROUND, ConnectorType.STRAIGHT)
++							),
++							new NewElementAction(e, new DefaultTemplates.LineTemplate(
++									"ligandsquare", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_SQUARE, ConnectorType.STRAIGHT)
++							),
++							new NewElementAction(e, new DefaultTemplates.LineTemplate(
++									"receptorsquare", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)
++							),
++					},
++					new Action[] {
+ 							new NewElementAction(e, new DefaultTemplates.InteractionTemplate()) },
+ 					new Action[] {
+ 							new NewElementAction(e, new DefaultTemplates.ReactionTemplate()) },
+-
+ 			};
+-		 
+-		 // actions for "Basic shapes" section
+-		 newShapeActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.RECTANGLE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.OVAL)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ROUNDED_RECTANGLE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.TRIANGLE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.PENTAGON)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.HEXAGON)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ARC)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.BRACE)),
+-		 };
+-		
+-		// actions for "Basic interactions" section
+-		 newInteractionActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "line", LineStyle.SOLID, LineType.LINE, LineType.LINE, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "arrow", LineStyle.SOLID, LineType.LINE, LineType.ARROW, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "dashedline", LineStyle.DASHED, LineType.LINE, LineType.LINE, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "dashedarrow", LineStyle.DASHED, LineType.LINE, LineType.ARROW, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "elbow", LineStyle.SOLID, LineType.LINE, LineType.LINE, ConnectorType.ELBOW)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "curve", LineStyle.SOLID, LineType.LINE, LineType.LINE, ConnectorType.CURVED)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "tbar", LineStyle.SOLID, LineType.LINE, LineType.TBAR, ConnectorType.STRAIGHT
+-				 )),
+-		 };
+-		
+-		 // actions for "Receptor/ligand interactions" section
+-		 newRLInteractionActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "ligandround", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_ROUND, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "ligandsquare", LineStyle.SOLID, LineType.LINE, LineType.LIGAND_SQUARE, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "receptorround", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_ROUND, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "receptorsquare", LineStyle.SOLID, LineType.LINE, LineType.RECEPTOR_SQUARE, ConnectorType.STRAIGHT)
+-				 ),
+-		 };
+-		 
+-		 // actions for "Cellular Component" section
+-		 newCellularComponentActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.VESICLE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.CELLA)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.RIBOSOME)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ORGANA)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ORGANB)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.ORGANC)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.PROTEINB)),
+-		 };
+-		
+-		 // actions for "Molecular Interaction Map Shapes" section
+-		 newMIMShapeActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(MIMShapes.MIM_PHOSPHORYLATED_SHAPE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(MIMShapes.MIM_DEGRADATION_SHAPE)),
+-				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(MIMShapes.MIM_INTERACTION_SHAPE)),
+-				 
+-		 };
+-		 
+-		 // actions for "Molecular Interaction Map Interactions" section
+-		 newMIMInteractionActions = new Action[] {
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Necessary stimulation", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_NECESSARY_STIMULATION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Binding", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_BINDING, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Conversion", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_CONVERSION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Stimulation", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_STIMULATION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Modification", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_MODIFICATION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Catalysis", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_CATALYSIS, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Inhibition", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_INHIBITION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Cleavage", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_CLEAVAGE, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Covalent bond", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_COVALENT_BOND, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Branching left", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_BRANCHING_LEFT, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Branching right", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_BRANCHING_RIGHT, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Transcription-translation", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_TRANSLATION, ConnectorType.STRAIGHT)
+-				 ),
+-				 new NewElementAction(e, new DefaultTemplates.LineTemplate(
+-						 "Gap", LineStyle.SOLID, LineType.LINE, MIMShapes.MIM_GAP, ConnectorType.STRAIGHT)
+-				 ),
+-		 };
+-		
++
+ 		saveAction = new SaveAction(se, true, false);
+ 		saveAsAction = new SaveAction(se, true, true);
+ 		standaloneSaveAction = new SaveAction(se, false, false);
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ImageButton.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ImageButton.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ImageButton.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -1,48 +0,0 @@
+-package org.pathvisio.gui.swing;
+-
+-import java.awt.Dimension;
+-import java.awt.Insets;
+-import java.awt.event.MouseAdapter;
+-import java.awt.event.MouseEvent;
+-import java.awt.event.MouseListener;
+-
+-import javax.swing.Action;
+-import javax.swing.JButton;
+-
+-/**
+- * this is the buttons on the drop-down panel
+- *
+- * @author bing
+- */
+-public class ImageButton extends JButton{
+-	
+-	public ImageButton(Action a){
+-		super();
+-		this.setRolloverEnabled(true);
+-		initRolloverListener();
+-		Dimension dim = new Dimension(25,25);
+-		this.setAction(a);
+-		this.setSize(dim);
+-		this.setPreferredSize(dim);
+-		this.setMinimumSize(dim);
+-		this.setMaximumSize(dim);
+-		this.setText(null);
+-		this.setMargin(new Insets(0,0,0,0));
+-		this.setContentAreaFilled(false);
+-	}
+-
+-	
+-	protected void initRolloverListener() {
+-		MouseListener l = new MouseAdapter(){
+-			public void mouseEntered(MouseEvent e) {
+-				setContentAreaFilled(true);
+-				getModel().setRollover(true);
+-			}
+-			public void mouseExited(MouseEvent e) {
+-				setContentAreaFilled(false);
+-			}
+-		};
+-		addMouseListener(l);
+-	}
+-	
+-}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ObjectsPane.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ObjectsPane.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/ObjectsPane.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -1,101 +0,0 @@
+-// PathVisio,
+-// a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2009 BiGCaT Bioinformatics
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-// http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
+-//
+-package org.pathvisio.gui.swing;
+-
+-import java.awt.BorderLayout;
+-import java.awt.Color;
+-import java.awt.Dimension;
+-import java.awt.GridBagConstraints;
+-import java.awt.GridBagLayout;
+-import java.awt.event.ActionEvent;
+-import java.awt.event.ActionListener;
+-
+-import javax.swing.Action;
+-import javax.swing.BorderFactory;
+-import javax.swing.JButton;
+-import javax.swing.JPanel;
+-import javax.swing.border.Border;
+-
+-import org.pathvisio.Engine;
+-
+-/**
+- * A side panel which displays all objects.
+- */
+-public class ObjectsPane extends JPanel
+-{
+-	private Engine engine;
+-	private SwingEngine swingEngine;
+-	private JPanel currentPane;
+-
+-	public ObjectsPane(SwingEngine swingEngine)
+-	{
+-		this.engine = swingEngine.getEngine();
+-		this.swingEngine = swingEngine;
+-		//setLayout(new BoxLayout(this,BoxLayout.PAGE_AXIS));		
+-		currentPane=this;
+-	}
+-
+-	/**
+-	 * add item buttons to a pane, multiple items per row
+-	 */
+-	public void addButtons(Action [] aa, String label, int numItemPerRow)
+-	{
+-		JPanel pane = new JPanel();
+-
+-		Border etch = BorderFactory.createEtchedBorder();
+-		pane.setBorder (BorderFactory.createTitledBorder (etch, label));
+-		
+-		pane.setBackground(Color.white);
+-		pane.setLayout(new GridBagLayout());
+-		GridBagConstraints c = new GridBagConstraints();
+-		c.gridheight = 1;
+-		c.gridwidth = 1;
+-		c.fill = GridBagConstraints.NONE;
+-		c.weightx = 1.0;
+-		c.weighty = 1.0;
+-
+-		int i=0;
+-		for(Action a : aa) {
+-			c.gridx = i%numItemPerRow;
+-			c.gridy = i/numItemPerRow;		
+-
+-			final ImageButton button= new ImageButton(a);
+-			button.addActionListener(new ActionListener() { 
+-				  public void actionPerformed(ActionEvent e) {
+-					  button.setContentAreaFilled(false);
+-				  } 
+-			});
+-			pane.add(button,c);
+-			i++;
+-		}
+-
+-		for(;i < numItemPerRow;i++){
+-			c.gridx = i;
+-			JButton dummy = new JButton();
+-			Dimension dim = new Dimension(25,0);
+-			dummy.setPreferredSize(dim);
+-			dummy.setContentAreaFilled(false);
+-			pane.add(dummy,c);
+-		}
+-		//add (pane);
+-		currentPane.setLayout (new BorderLayout());
+-		currentPane.add(pane,BorderLayout.NORTH);
+-		JPanel paneNext = new JPanel();
+-		currentPane.add(paneNext,BorderLayout.CENTER);
+-		currentPane = paneNext;		
+-	}
+-}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/dialogs/AboutDlg.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/dialogs/AboutDlg.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/dialogs/AboutDlg.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -66,7 +66,7 @@
+ 				"<p>R.M.H. Besseling, S.P.M.Crijns, I. Kaashoek<br>\n" +
+ 				"M.M. Palm, E.D. Pelgrim, E. Neuteboom,<br>\n" +
+ 				"E.J. Creusen, P. Moeskops, Adem Bilican,<br>\n" +
+-				"Margot Sunshine, Mark Woon, Bing Liu<br>\n" +
++				"Margot Sunshine, Mark Woon<br>\n" +
+ 				"<h3>Visit our website</h3>" +
+ 				"<p>http://www.pathvisio.org" +
+ 				"</html>");
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/SwingEngine.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/SwingEngine.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(revision 3200)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/gui/swing/SwingEngine.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(working copy)
+@@ -18,6 +18,7 @@
+ 
+ import java.awt.Component;
+ import java.awt.Container;
++import java.awt.Point;
+ import java.io.File;
+ import java.net.URL;
+ import java.util.Comparator;
+@@ -200,7 +201,7 @@
+ 				}
+ 			}
+ 		};
+-
++		moveToCenter();
+ 		return processTask(pk, d, sw);
+ 	}
+ 
+@@ -233,7 +234,7 @@
+ 
+ 	public void newPathway() {
+ 		engine.setWrapper (createWrapper());
+-		engine.newPathway();
++		engine.newPathway(); moveToCenter();
+ 	}
+ 
+ 	public boolean exportPathway() {
+@@ -604,4 +605,17 @@
+ 		String organism = getEngine().getActivePathway().getMappInfo().getOrganism();
+ 		return Organism.fromLatinName(organism);
+ 	}
++	
++	/**
++	 * Positioning the pathway to the center of the canvas
++	 */
++	public void moveToCenter()
++	{
++		//System.out.println(((VPathwaySwing)(engine.wrapper)).container.getViewport().getView());
++		//engine.getActiveVPathway().allMoveBy(10000, 10000);
++		//engine.getActiveVPathway().allMoveBy(-8000, -8000);
++		//System.out.println(((VPathwaySwing)(engine.wrapper)).container.getViewport().getViewRect());
++		//((VPathwaySwing)(engine.wrapper)).container.getViewport().setViewPosition(new Point (100, 100));
++		//System.out.println(((VPathwaySwing)(engine.wrapper)).container.getViewport().getViewRect());
++	}
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/view/swing/VPathwaySwing.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/view/swing/VPathwaySwing.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/org/pathvisio/view/swing/VPathwaySwing.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -37,27 +37,20 @@
+ import java.awt.event.MouseEvent;
+ import java.awt.event.MouseListener;
+ import java.awt.event.MouseMotionListener;
+-import java.awt.event.MouseWheelEvent;
+-import java.awt.event.MouseWheelListener;
+-import java.text.DecimalFormat;
+ import java.util.HashSet;
+ import java.util.List;
+ import java.util.Set;
+ 
+ import javax.swing.Action;
+-import javax.swing.JComboBox;
+ import javax.swing.JComponent;
+ import javax.swing.JPanel;
+ import javax.swing.JScrollPane;
+-import javax.swing.JViewport;
+ import javax.swing.JWindow;
+ import javax.swing.KeyStroke;
+-import javax.swing.ScrollPaneConstants;
+ import javax.swing.SwingUtilities;
+ import javax.swing.TransferHandler;
+ import javax.swing.UIManager;
+ 
+-import org.pathvisio.gui.swing.MainPanel;
+ import org.pathvisio.gui.swing.dnd.PathwayImportHandler;
+ import org.pathvisio.model.Pathway;
+ import org.pathvisio.model.PathwayElement;
+@@ -76,11 +69,11 @@
+  * swing-dependent implementation of VPathway.
+  */
+ public class VPathwaySwing extends JPanel implements VPathwayWrapper,
+-MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouseListener, MouseWheelListener {
++MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouseListener {
+ 
+ 	VPathway child;
+ 
+-	public JScrollPane container;
++	JScrollPane container;
+ 
+ 	public VPathwaySwing(JScrollPane parent) {
+ 		super();
+@@ -90,7 +83,6 @@
+ 		addMouseListener(this);
+ 		addMouseMotionListener(this);
+ 		addKeyListener(this);
+-		addMouseWheelListener(this);
+ 
+ 		setFocusable(true);
+ 		setRequestFocusEnabled(true);
+@@ -164,29 +156,13 @@
+ 
+ 	}
+ 
+-	private int vPreviousX;
+-	private int vPreviousY;
+-	private boolean isPanning;
+-	
+ 	public void mousePressed(MouseEvent e) {
+ 		requestFocus();
+-		if(e.getButton() != MouseEvent.BUTTON2){
+-			child.mouseDown(new SwingMouseEvent(e));
+-		} else {
+-			vPreviousX = e.getX();
+-			vPreviousY = e.getY();
+-			isPanning = true;
+-			setCursor(new Cursor(Cursor.HAND_CURSOR));
+-		}
++		child.mouseDown(new SwingMouseEvent(e));
+ 	}
+ 
+ 	public void mouseReleased(MouseEvent e) {
+-		if(e.getButton() != MouseEvent.BUTTON2){
+-			child.mouseUp(new SwingMouseEvent(e));
+-		} else {
+-			isPanning = false;
+-			setCursor(Cursor.getDefaultCursor());
+-		}
++		child.mouseUp(new SwingMouseEvent(e));
+ 	}
+ 
+ 	public void keyPressed(KeyEvent e) {
+@@ -226,85 +202,13 @@
+ 		container.getViewport().setViewPosition(
+ 				new Point (newx, newy)
+ 		);
+-		if(!isPanning){
+-			child.mouseMove(new SwingMouseEvent(e));
+-		} else {
+-		    int vdx = e.getX() - vPreviousX;
+-			int vdy = e.getY() - vPreviousY;
+-			
+-			newx = container.getViewport().getViewPosition().x - vdx;
+-			newy = container.getViewport().getViewPosition().y - vdy;
+-
+-			
+-		    if(newx < 0 || newy < 0 || !container.getHorizontalScrollBar().isVisible() || !container.getVerticalScrollBar().isVisible()){
+-				vPreviousX = e.getX();
+-				vPreviousY = e.getY();
+-				child.allMoveBy(vdx, vdy);	
+-			} else {
+-				container.getViewport().setViewPosition(new Point (newx, newy));
+-			}
+-			
+-			
+-			//int dx = vPreviousX - e.getX();
+-			//int dy = vPreviousY - e.getY();
+-			//moveView(dx,dy) ;			
+-		}
++		child.mouseMove(new SwingMouseEvent(e));
+ 	}
+ 
+-	private void moveView(int dx, int dy) {
+-        // declare the movement to the component
+-        //this.movePosition(dx, dy);
+-		
+-		JViewport jviewport = container.getViewport();
+-
+-		// calculate the new viewport position
+-        Point newPos = jviewport.getViewPosition();
+-        newPos.translate(dx, dy);
+- 
+-        // reset the viewport if it is going to overrun the edge
+-        if (newPos.x <= 0 || newPos.x + jviewport.getWidth() >= jviewport.getView().getWidth()
+-                || newPos.y <= 0 || newPos.y + jviewport.getHeight() >= jviewport.getView().getHeight()) {
+-            Point centre = new Point(this.getWidth() / 2, this.getHeight() / 2);
+-            jviewport.setViewPosition(centre);
+-            container.repaint() ;
+-        } else {
+-            // move the viewport to do the necessary redraw
+-            jviewport.setViewPosition(newPos);
+-        }
+-    }
+-	
+ 	public void mouseMoved(MouseEvent e) {
+ 		child.mouseMove(new SwingMouseEvent(e));
+ 	}
+ 
+-	public void mouseWheelMoved(MouseWheelEvent e) {
+-		
+-	    int notches = e.getWheelRotation();
+-	    double dx,dy;
+-	    if(notches < 0){
+-	    	child.setPctZoom(child.getPctZoom() * 21 / 20);
+-	    	dx = - e.getPoint().x / 20.0;
+-	    	dy = - e.getPoint().y / 20.0;
+-	    } else {
+-	    	child.setPctZoom(child.getPctZoom() * 20 / 21);
+-	    	dx = e.getPoint().x / 21.0;
+-	    	dy = e.getPoint().y / 21.0;
+-	    }
+-	    
+-	    int newx = (int)Math.round(container.getViewport().getViewPosition().x - dx);
+-	    int newy = (int)Math.round(container.getViewport().getViewPosition().y - dy);
+-	    
+-	    if(newx < 0 || newy < 0 || !container.getHorizontalScrollBar().isVisible() || !container.getVerticalScrollBar().isVisible()){
+-	    	child.allMoveBy(dx, dy);
+-	    } else {
+-	    	container.getViewport().setViewPosition(new Point (newx, newy));
+-	    }
+-	    
+-		int comboIndex = 10;
+-		DecimalFormat df = new DecimalFormat("###.#");
+-		((JComboBox)((MainPanel)container.getParent().getParent()).getToolBar().getComponentAtIndex(comboIndex)).setSelectedItem(df.format(child.getPctZoom())+"%");
+-	}
+-	
+ 	public void registerKeyboardAction(KeyStroke k, Action a) {
+ 		super.registerKeyboardAction(a, k, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+ 		//super.registerKeyboardAction(a, k, WHEN_IN_FOCUSED_WINDOW);
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/com/mammothsoftware/frwk/ddb/DropDownButton.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/com/mammothsoftware/frwk/ddb/DropDownButton.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/gui/com/mammothsoftware/frwk/ddb/DropDownButton.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -205,9 +205,9 @@
+         JPopupMenu popup = getPopupMenu();
+         popup.show(this, 0, this.getHeight());
+     }
+-   
+-   public JPopupMenu getPopupMenu() { return popup; }
+ 
++   protected JPopupMenu getPopupMenu() { return popup; }
++
+    private static class DownArrow implements Icon {
+ 
+       Color arrowColor = Color.black;
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/MainPanelStandalone.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/MainPanelStandalone.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/MainPanelStandalone.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -216,7 +216,7 @@
+ 			} else { //This is the line/receptor sub-menu
+ 				String icon = "newlinemenu.gif";
+ 				String tooltip = "Select a line to draw";
+-				
++
+ 				if(submenu.equals("receptors")) { //Next one is receptors
+ 					icon = "newlineshapemenu.gif";
+ 					tooltip = "Select a receptor/ligand to draw";
+@@ -226,64 +226,14 @@
+ 				DropDownButton lineButton = new DropDownButton(new ImageIcon(
+ 						Resources.getResourceURL(icon)));
+ 				lineButton.setToolTipText(tooltip);
+-				
+ 				for(Action a : aa) {
+ 					lineButton.addComponent(new JMenuItem(a));
+ 				}
+ 				addToToolbar(lineButton, TB_GROUP_SHOW_IF_EDITMODE);
+-				//lineButton.setEnabled(false);
+ 			}
+ 		}
+-		
+-		// define the drop-down menu for shapes 
+-		String icon = "newitems.gif";
+-		String tooltip = "Select a shape to draw";
+-		DropDownButton shapeButton = new DropDownButton(
+-				new ImageIcon(Resources.getResourceURL(icon)));
+-		shapeButton.setToolTipText(tooltip);		
+-		itemsDropDown = shapeButton;
+-		
+-		int numItemsPerRow = 6;
+-		addLabel(shapeButton, "Basic shapes");
+-		addButtons(actions.newShapeActions, shapeButton, numItemsPerRow);		
+ 
+-		addLabel(shapeButton, "Cellular components");
+-		addButtons(actions.newCellularComponentActions, shapeButton, numItemsPerRow);
+-
+-		addLabel(shapeButton, "MIM shapes");
+-		addButtons(actions.newMIMShapeActions, shapeButton, numItemsPerRow);
+-		
+-		// addMenuItems() can be used to display item with label as memu items
+-		//addMenuItems(actions.newMolecularInteractionMapActions, shapeButton);
+-		
+-		addToToolbar(shapeButton, TB_GROUP_SHOW_IF_EDITMODE);
+-		//shapeButton.setEnabled(false);
+-
+-		//tb.addSeparator();
+-		
+-		// define the drop-down menu for interactions
+-		icon = "newinteractionmenu.gif";
+-		tooltip = "Select a interaction to draw";
+-		DropDownButton lineButton = new DropDownButton(
+-				new ImageIcon(Resources.getResourceURL(icon)));
+-		lineButton.setToolTipText(tooltip);		
+-		//itemsDropDown = lineButton;
+-		
+-		numItemsPerRow = 6;		
+-		addLabel(lineButton, "Basic interactions");
+-		addButtons(actions.newInteractionActions, lineButton, numItemsPerRow);
+-
+-		addLabel(lineButton, "Receptor/ligand");
+-		addButtons(actions.newRLInteractionActions, lineButton, numItemsPerRow);
+-		
+-		addLabel(lineButton, "MIM interactions");
+-		addButtons(actions.newMIMInteractionActions, lineButton, numItemsPerRow);		
+-		
+-		addToToolbar(lineButton, TB_GROUP_SHOW_IF_EDITMODE);
+-		//lineButton.setEnabled(false);
+-
+ 		tb.addSeparator();
+-		
+ 
+ 		addToToolbar(actions.layoutActions);
+ 	}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/PvDesktop.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/PvDesktop.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/gui/swing/PvDesktop.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -45,7 +45,6 @@
+ import org.pathvisio.preferences.PreferenceManager;
+ import org.pathvisio.util.swing.StandaloneCompat;
+ import org.pathvisio.view.VPathway;
+-import org.pathvisio.visualization.Visualization;
+ import org.pathvisio.visualization.VisualizationEvent;
+ import org.pathvisio.visualization.VisualizationManager;
+ 
+@@ -320,8 +319,7 @@
+ 	{
+ 		loadGexCache();
+ 		
+-		Visualization v = visualizationManager.getActiveVisualization(); 
+-		if (v != null && v.isShowLegend())
++		if (visualizationManager.isShowLegend())
+ 		{
+ 			// check if pwy contains a legend, add it if not
+ 			Pathway pwy = swingEngine.getEngine().getActivePathway();
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/Visualization.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/Visualization.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/Visualization.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -33,6 +33,7 @@
+ import org.pathvisio.debug.Logger;
+ import org.pathvisio.view.Graphics;
+ import org.pathvisio.view.Legend;
++import org.pathvisio.visualization.plugins.LegendPanel;
+ 
+ /**
+  * Represents a set of configured visualization plugins
+@@ -150,6 +151,15 @@
+ 		{
+ 			m.visualizeOnDrawing(g, g2d);
+ 		}
++		if (g instanceof Legend && visMgr.isShowLegend())
++		{
++			Legend l = (Legend)g;
++			Rectangle2D area = l.getVBounds();
++			double zoomFactor = l.getDrawing().getZoomFactor();
++			Font f = l.getVFont();
++			g2d.setFont(f);
++			LegendPanel.drawVisualization(visMgr, g2d, area, zoomFactor);
++		}
+ 	}
+ 
+ 	/**
+@@ -243,13 +253,4 @@
+ 	public String toString() {
+ 		return name;
+ 	}
+-
+-	private boolean showLegend;
+-	public boolean isShowLegend() { return showLegend; }
+-	public void setShowLegend (boolean value) 
+-	{ 
+-		showLegend = value;
+-		modified();
+-	}
+-
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/VisualizationManager.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/VisualizationManager.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/swing/org/pathvisio/visualization/VisualizationManager.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -68,6 +68,7 @@
+ 	private final Engine engine;
+ 	private final GexManager gexManager;
+ 	private final VisualizationMethodRegistry methodRegistry;
++	private boolean showLegend;
+ 	
+ 	public VisualizationManager(Engine engine, GexManager gexManager) {
+ 		colorSetMgr = new ColorSetManager();
+@@ -146,6 +147,16 @@
+ 		return visualizations;
+ 	}
+ 
++	public boolean isShowLegend() { return showLegend; }
++	public void setShowLegend (boolean value) 
++	{ 
++		showLegend = value; 
++		fireVisualizationEvent(
++				new VisualizationEvent(
++					VisualizationManager.class,
++					VisualizationEvent.VISUALIZATION_MODIFIED));
++	}
++
+ 	/**
+ 	   get a list of names of all visualizations as an array.
+ 	 */
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VAnchor.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VAnchor.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VAnchor.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -223,8 +223,4 @@
+ 	protected int getZOrder() {
+ 		return line.getPathwayElement().getZOrder() + 1;
+ 	}
+-	
+-	public double getVWidth() { return vFromM(my-mx);  }
+-
+-	public double getVHeight() { return 0;  }
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPathway.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPathway.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -81,7 +81,7 @@
+ 	private Pathway temporaryCopy = null;
+ 
+ 	/**
+-	 * Returns true if snap to anchors is enabled
++	 * Retuns true if snap to anchors is enabled
+ 	 */
+ 	public boolean isSnapToAnchors()
+ 	{
+@@ -283,7 +283,7 @@
+ 		double[] calcSize = data.getMappInfo().getMBoardSize();
+ 		int width = (int) vFromM(calcSize[0]);
+ 		int height = (int) vFromM(calcSize[1]);
+-		parent.setVSize(width+10000, height+10000); //parent.setVSize(width, height);
++		parent.setVSize(width, height);
+ 
+ 		// data.fireObjectModifiedEvent(new PathwayEvent(null,
+ 		// PathwayEvent.MODIFIED_GENERAL));
+@@ -611,132 +611,71 @@
+ 	private int vPreviousX;
+ 	private int vPreviousY;
+ 	private boolean isDragging;
+-	//private boolean isPanning;
+-	
++
+ 	/**
+ 	 * handles mouse movement
+ 	 */
+ 	public void mouseMove(MouseEvent ve)
+ 	{
+-		//if(!isDraggingButton2){
+-			snapToAngle = ve.isKeyDown(MouseEvent.M_SHIFT);
+-			// If draggin, drag the pressed object
+-			// And only when the right button isn't clicked
+-			if (pressedObject != null && isDragging && !ve.isKeyDown(java.awt.event.MouseEvent.BUTTON3_DOWN_MASK))
++		snapToAngle = ve.isKeyDown(MouseEvent.M_SHIFT);
++		// If draggin, drag the pressed object
++		// And only when the right button isn't clicked
++		if (pressedObject != null && isDragging && !ve.isKeyDown(java.awt.event.MouseEvent.BUTTON3_DOWN_MASK))
++		{
++			if (dragUndoState == DRAG_UNDO_CHANGE_START)
+ 			{
+-				if (dragUndoState == DRAG_UNDO_CHANGE_START)
+-				{
+-					dragUndoState = DRAG_UNDO_CHANGED;
+-				}
+-				double vdx = ve.getX() - vPreviousX;
+-				double vdy = ve.getY() - vPreviousY;
+-				if (pressedObject instanceof Handle)
+-				{
+-					((Handle) (pressedObject)).vMoveTo(ve.getX(), ve.getY());
+-				} else
+-				{
+-					pressedObject.vMoveBy(vdx, vdy);
+-				}
++				dragUndoState = DRAG_UNDO_CHANGED;
++			}
++			double vdx = ve.getX() - vPreviousX;
++			double vdy = ve.getY() - vPreviousY;
++			if (pressedObject instanceof Handle)
++			{
++				((Handle) (pressedObject)).vMoveTo(ve.getX(), ve.getY());
++			} else
++			{
++				pressedObject.vMoveBy(vdx, vdy);
++			}
+ 
+-				vPreviousX = ve.getX();
+-				vPreviousY = ve.getY();
++			vPreviousX = ve.getX();
++			vPreviousY = ve.getY();
+ 
+-				if (pressedObject instanceof Handle
+-						&& newTemplate == null
+-						&& ((Handle) pressedObject).getAdjustable() instanceof VPoint)
+-				{
+-					linkPointToObject(new Point2D.Double(ve.getX(), ve.getY()),
+-							(Handle) pressedObject);
+-				}
++			if (pressedObject instanceof Handle
++					&& newTemplate == null
++					&& ((Handle) pressedObject).getAdjustable() instanceof VPoint)
++			{
++				linkPointToObject(new Point2D.Double(ve.getX(), ve.getY()),
++						(Handle) pressedObject);
++			}
+ 
+-				redrawDirtyRect();
+-			} else {
+-				List<VPathwayElement> objects = getObjectsAt(new Point2D.Double(ve.getX(), ve.getY()));
+-				Set<VPathwayElement> toRemove = new HashSet<VPathwayElement>();
+-				//Process mouseexit events
+-				for(VPathwayElement vpe : lastMouseOver) {
+-					if(!objects.contains(vpe)) {
+-						toRemove.add(vpe);
+-						fireVElementMouseEvent(new VElementMouseEvent(
+-								this, VElementMouseEvent.TYPE_MOUSEEXIT, vpe, ve
+-						));
+-					}
++			redrawDirtyRect();
++		} else {
++			List<VPathwayElement> objects = getObjectsAt(new Point2D.Double(ve.getX(), ve.getY()));
++			Set<VPathwayElement> toRemove = new HashSet<VPathwayElement>();
++			//Process mouseexit events
++			for(VPathwayElement vpe : lastMouseOver) {
++				if(!objects.contains(vpe)) {
++					toRemove.add(vpe);
++					fireVElementMouseEvent(new VElementMouseEvent(
++							this, VElementMouseEvent.TYPE_MOUSEEXIT, vpe, ve
++					));
+ 				}
+-				lastMouseOver.removeAll(toRemove);
++			}
++			lastMouseOver.removeAll(toRemove);
+ 
+-				//Process mouseenter events
+-				for(VPathwayElement vpe : objects) {
+-					if(!lastMouseOver.contains(vpe)) {
+-						lastMouseOver.add(vpe);
+-						fireVElementMouseEvent(new VElementMouseEvent(
+-								this, VElementMouseEvent.TYPE_MOUSEENTER, vpe, ve
+-						));
+-					}
++			//Process mouseenter events
++			for(VPathwayElement vpe : objects) {
++				if(!lastMouseOver.contains(vpe)) {
++					lastMouseOver.add(vpe);
++					fireVElementMouseEvent(new VElementMouseEvent(
++							this, VElementMouseEvent.TYPE_MOUSEENTER, vpe, ve
++					));
+ 				}
+ 			}
++		}
+ 
+-			hoverManager.reset(ve);
+-		/*} else {
+-		    int vdx = ve.getX() - vPreviousX;
+-			int vdy = ve.getY() - vPreviousY;
+-			
+-			VPathwaySwing vps = (VPathwaySwing)(ve.getSource());
+-			int newx = vps.container.getViewport().getViewPosition().x - vdx;
+-			int newy = vps.container.getViewport().getViewPosition().y - vdy;
+-
+-			//int viewWidth = vps.container.getViewport().getExtentSize().width;
+-		    //int viewHeight = vps.container.getViewport().getExtentSize().height;
+-		    
+-			//if(newx < 0 || newy < 0){
+-		    //if(newx < 0 || newy < 0 || vps.getWidth() == viewWidth || vps.getHeight() == viewHeight){
+-		    if(newx < 0 || newy < 0 || !vps.container.getHorizontalScrollBar().isVisible() || !vps.container.getVerticalScrollBar().isVisible()){
+-				vPreviousX = ve.getX();
+-				vPreviousY = ve.getY();
+-				allMoveBy(vdx, vdy);	
+-			} else {
+-				vps.container.getViewport().setViewPosition(new Point (newx, newy));
+-			}
+-		} */
++		hoverManager.reset(ve);
+ 	}
+-	
+-	/**
+-	 * move all the objects
+-	 */
+-	public void allMoveBy(double dx, double dy)
+-	{		
+-		
+-		List<VPathwayElement> nonshapeObjects = new ArrayList<VPathwayElement>();
+-		for(VPathwayElement vpe : drawingObjects) {
+-			if(!vpe.equals(pressedObject) && ((vpe instanceof Shape)))
+-				vpe.vMoveBy(dx,dy);
+-			else
+-				nonshapeObjects.add(vpe);
+-		}
+-		for(VPathwayElement vpe : nonshapeObjects) {
+-			if(!vpe.equals(pressedObject) && (!(vpe instanceof Group))){
+-				//System.out.println(vpe);
+-				vpe.vMoveBy(dx,dy);
+-			}
+-	    }
+-	    
+-		
+-		/*
+-		for(VPathwayElement vpe : drawingObjects) {
+-			if(!vpe.equals(pressedObject) && (!(vpe instanceof Group))){
+-				if(vpe instanceof Line){
+-					System.out.println(((Line)vpe).getVAnchors());
+-					//vpe.markDirty();
+-				} else {
+-					if(vpe instanceof Shape || vpe instanceof SelectionBox)
+-						vpe.vMoveBy(dx,dy);
+-					else System.out.println(vpe);
+-				}
+-				//vpe.vMoveBy(dx,dy);
+-			}
+-	    }
+-	    */
+-	}
+-	
++
+ 	private Set<VPathwayElement> lastMouseOver = new HashSet<VPathwayElement>();
+ 	private HoverManager hoverManager = new HoverManager();
+ 
+@@ -841,7 +780,7 @@
+ 		{
+ 			fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
+ 					VPathwayEvent.ELEMENT_CLICKED_DOWN));
+-		}		
++		}
+ 	}
+ 
+ 	/**
+@@ -1702,7 +1641,7 @@
+ 		for(VPathwayElement e : drawingObjects) {
+ 			bounds.add(e.getVBounds());
+ 		}
+-		return new Dimension((int)bounds.getWidth() + 10000, (int)bounds.getHeight() + 10000); //return new Dimension((int)bounds.getWidth() + 10, (int)bounds.getHeight() + 10); //lb
++		return new Dimension((int)bounds.getWidth() + 10, (int)bounds.getHeight() + 10);
+ 	}
+ 
+ 	/**
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Adjustable.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Adjustable.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Adjustable.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -32,9 +32,4 @@
+ 
+ 	/** only needs to be implemented for Handles that are not type Handle.DIRECTION_FREE */
+ 	public Rectangle2D getVBounds();
+-	
+-	/** only needs to be implemented for Handles that are not type Handle.DIRECTION_FREE */
+-	public double getVWidth();
+-	
+-	public double getVHeight();
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPoint.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPoint.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/VPoint.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -141,8 +141,4 @@
+ 	{
+ 		return handle;
+ 	}
+-	
+-	public double getVWidth() { return 0;  }
+-
+-	public double getVHeight() { return 0;  }
+ }
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Handle.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Handle.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Handle.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -44,10 +44,8 @@
+ 	 * the life of a Handle.
+ 	 */
+ 	enum Freedom {
+-		/** a FREE handle can move to any location on the canvas, it move diagonally when SHIFT is pressed */
++		/** a FREE handle can move to any location on the canvas */
+ 		FREE,
+-		/** a FREER handle can move to any location on the canvas, it move diagonally (perpendicular to XY) when SHIFT is pressed */
+-		FREER,
+ 		/** an X handle can only move horizontally */
+ 		X,
+ 		/** an Y handle can only move vertically */
+@@ -235,13 +233,11 @@
+ 	   It is the responsibility of the {@link Adjustable} to
+ 	   update the position of this Handle again.
+ 	 */
+-	public void vMoveTo(double vnx, double vny)
++	public void vMoveTo (double vnx, double vny)
+ 	{
+ 		markDirty();
+-		
+-		if((freedom != Freedom.FREE || canvas.isSnapToAngle()) 
+-				&& (freedom != Freedom.FREER || canvas.isSnapToAngle()) 
+-				&& freedom != Freedom.ROTATION ) {
++
++		if(freedom != Freedom.FREE && freedom != Freedom.ROTATION) {
+ 			Point v = new Point(0,0);
+ 			Rectangle2D b = adjustable.getVBounds();
+ 			Point base = new Point (b.getCenterX(), b.getCenterY());
+@@ -261,36 +257,11 @@
+ 			{
+ 				v = new Point (b.getHeight(), -b.getWidth());
+ 			}
+-			if (freedom == Freedom.FREE)
+-			{
+-				v = new Point (adjustable.getVWidth(), adjustable.getVHeight());
+-			}
+-			else if (freedom == Freedom.FREER)
+-			{
+-				v = new Point (adjustable.getVWidth(), -adjustable.getVHeight());
+-			}
+ 			Point yr = LinAlg.rotate(v, -rotation);
+ 			Point prj = LinAlg.project(base, new Point(vnx, vny), yr);
+ 			vnx = prj.x; vny = prj.y;
+ 		}
+ 
+-		/*
+-		if ((freedom == Freedom.FREE || freedom == Freedom.FREER) && canvas.isSnapToAngle())
+-		{
+-			// powerpoint like handler
+-			double w = adjustable.getVWidth();
+-			double h = adjustable.getVHeight();
+-			Rectangle2D b = adjustable.getVBounds();
+-			Point base = new Point (b.getCenterX()-w/2, b.getCenterY()-h/2);
+-			double ratio = w/h; 
+-			System.out.println("["+base.x+" "+ base.y+"] ratio="+ratio);
+-			if((vnx - base.x) / (vny - base.y) < ratio) {
+-				vnx = (vny - base.y) * ratio + base.x;
+-			} else {
+-				vny = (vnx - base.x) / ratio + base.y; 
+-			}	
+-		}		
+-		*/
+ 		adjustable.adjustToHandle(this, vnx, vny);
+ 		markDirty();
+ 	}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/GraphicsShape.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/GraphicsShape.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/GraphicsShape.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -89,9 +89,9 @@
+ 		}
+ 		else if (this instanceof State)
+ 		{
+-			handleNE = new Handle(Handle.Freedom.FREER, this, this);
++			handleNE = new Handle(Handle.Freedom.FREE, this, this);
+ 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
+-			handleSW = new Handle(Handle.Freedom.FREER, this, this);
++			handleSW = new Handle(Handle.Freedom.FREE, this, this);
+ 			handleNW = new Handle(Handle.Freedom.FREE, this, this);
+ 			handleNE.setCursorHint(Cursor.NE_RESIZE_CURSOR);
+ 			handleSE.setCursorHint(Cursor.SE_RESIZE_CURSOR);
+@@ -110,9 +110,9 @@
+ 			handleS = new Handle(Handle.Freedom.Y, this, this);
+ 			handleW = new Handle(Handle.Freedom.X, this, this);
+ 
+-			handleNE = new Handle(Handle.Freedom.FREER, this, this);
++			handleNE = new Handle(Handle.Freedom.FREE, this, this);
+ 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
+-			handleSW = new Handle(Handle.Freedom.FREER, this, this);
++			handleSW = new Handle(Handle.Freedom.FREE, this, this);
+ 			handleNW = new Handle(Handle.Freedom.FREE, this, this);
+ 
+ 			handleN.setCursorHint(Cursor.N_RESIZE_CURSOR);
+@@ -446,13 +446,8 @@
+ 		//Number of link anchors depends on the size of the object
+ 		//If the width/height is large enough, there will be three link anchors per side,
+ 		//Otherwise there will be only one link anchor per side
+-		String anchorsCnt = gdata.getDynamicProperty("NumberOfAnchors");
+-        int numAnchors = 3;
+-        if (anchorsCnt != null) {
+-            numAnchors = Integer.parseInt(anchorsCnt);
+-        }
+-        int numH = gdata.getMWidth() < MIN_SIZE_LA ? 1 : numAnchors;
+-		int numV = gdata.getMHeight() < MIN_SIZE_LA ? 1 : numAnchors;
++		int numH = gdata.getMWidth() >= MIN_SIZE_LA ? 3 : 1;
++		int numV = gdata.getMHeight() >= MIN_SIZE_LA ? 3 : 1;
+ 		if(numH != numLinkanchorsH || numV != numLinkanchorsV) {
+ 			createLinkAnchors(numH, numV);
+ 		}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/MIMShapes.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/MIMShapes.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/MIMShapes.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -44,10 +44,6 @@
+     public static final LineType MIM_TRANSLATION = LineType.create ("mim-transcription-translation", "Arrow");
+     public static final LineType MIM_GAP = LineType.create ("mim-gap", null);
+ 
+-    public static final ShapeType MIM_PHOSPHORYLATED_SHAPE = ShapeType.create ("mim-phosphorylated", null);
+-    public static final ShapeType MIM_DEGRADATION_SHAPE = ShapeType.create ("mim-degradation", null);
+-    public static final ShapeType MIM_INTERACTION_SHAPE = ShapeType.create ("mim-interaction", null);
+-     
+     public static void registerShapes()
+ 	{
+ 		ShapeRegistry.registerShape ("mim-phosphorylated", getPluggableShape (MIM_PHOSPHORYLATED));
+@@ -68,9 +64,9 @@
+         ShapeRegistry.registerArrow (MIM_TRANSLATION.getName(), getMIMTranslation(), ArrowShape.FillType.WIRE, ARROWWIDTH + ARROWHEIGHT);
+         ShapeRegistry.registerArrow (MIM_GAP.getName(), getMIMGap(), ArrowShape.FillType.OPEN, 10);
+ 
+-        //ShapeType.create ("mim-phosphorylated", null);
+-		//ShapeType.create ("mim-degradation", null);
+-		//ShapeType.create ("mim-interaction", null);
++        ShapeType.create ("mim-phosphorylated", null);
++		ShapeType.create ("mim-degradation", null);
++		ShapeType.create ("mim-interaction", null);
+ 	}
+ 
+     private static final int MIM_PHOSPHORYLATED = 0;
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/SelectionBox.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/SelectionBox.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/SelectionBox.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -592,8 +592,4 @@
+ 	protected int getZOrder() {
+ 		return VPathway.ZORDER_SELECTIONBOX;
+ 	}
+-	
+-	public double getVWidth() { return vFromM(mWidth);  }
+-
+-	public double getVHeight() { return vFromM(mHeight);  }
+ }
+\ No newline at end of file
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Legend.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Legend.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/view/Legend.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -26,14 +26,6 @@
+ 
+ import org.pathvisio.model.PathwayElement;
+ 
+-/**
+- * Legend objects can be used by plugins to draw a Legend for visualization of 
+- * expression datasets, for example to indicate which color corresponds to which expression value.
+- * <p>
+- * In the absence of any visualizations, Legends are completely empty.
+- * <p> 
+- * Legends are automatically created for pathway elements with ObjectType.LEGEND. 
+- */
+ public class Legend extends Graphics
+ {
+ 	public Legend(VPathway canvas, PathwayElement o)
+@@ -46,9 +38,6 @@
+ 	private static final int M_INITIAL_LEGEND_WIDTH = 200;
+ 	private static final int M_INITIAL_LEGEND_HEIGHT = 300;
+ 
+-	/**
+-	 * Draws nothing by default, only when it is selected an outline is drawn.
+-	 */
+ 	@Override
+ 	protected void doDraw(Graphics2D g)
+ 	{
+@@ -65,9 +54,6 @@
+ 		}
+ 	}
+ 
+-	/**
+-	 * Simple drag operation, object is moved by the delta coordinates passed in.
+-	 */
+ 	@Override
+ 	protected void vMoveBy(double vdx, double vdy)
+ 	{
+@@ -76,8 +62,9 @@
+ 	}
+ 
+ 	/**
+-	 * vContains looks for overlap with the whole rectangle, not just the outline,
+-	 * so it is easy to drag.
++	 * {@inheritDoc}
++	 * GeneProduct overrides vContains, because the base implementation only considers a 
++	 * hit with the outline, which makes it hard to grab with the mouse.
+ 	 */
+ 	@Override
+ 	protected boolean vContains(Point2D point)
+@@ -93,9 +80,6 @@
+ 		}
+ 	}
+ 
+-	/**
+-	 * Simply a rectangle of constant size.
+-	 */
+ 	@Override
+ 	protected Shape getVShape(boolean rotate)
+ 	{
+@@ -110,9 +94,6 @@
+ 		return new Rectangle2D.Double(vLeft, vTop, vW, vH);
+ 	}
+ 
+-	/**
+-	 * Get Font object scaled to current zoom factor.
+-	 */
+ 	public Font getVFont() {
+ 		String name = gdata.getFontName();
+ 		int style = getVFontStyle();
+@@ -120,17 +101,11 @@
+ 		return new Font(name, style, size);
+ 	}
+ 
+-	/**
+-	 * Get font size scaled to current zoom factor.
+-	 */
+ 	double getVFontSize()
+ 	{
+ 		return vFromM(gdata.getMFontSize());
+ 	}
+ 
+-	/**
+-	 * Doesn't do anything, you can't change the size of a Legend object.
+-	 */
+ 	@Override
+ 	protected void setVScaleRectangle(Rectangle2D r)
+ 	{
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/model/ObjectType.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/model/ObjectType.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/model/ObjectType.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -26,31 +26,24 @@
+ {
+ 	/** any shape with width and height */
+ 	SHAPE ("Shape"),
+-	
+ 	/** a rectangle that contains a link to an online biological database */
+ 	DATANODE ("DataNode"),
+-	
+ 	/** a piece of text */
+ 	LABEL ("Label"),
+-
+ 	/** a connector. Can be straight, or can consist of multiple line segments */
+ 	LINE ("Line"),
+-	
+-	/** Zero or one per pathway. Placeholder object to let visualization plugins draw a legend */
++	/** One per pathway.
++	 * TODO unused */
+ 	LEGEND ("Legend"),
+-	
+-	/** One per pathway. TODO: unused. */
++	/** One per pathway
++	 * TODO unused */
+ 	INFOBOX ("InfoBox"),
+-	
+ 	/** The pathway description, one per pathway. In GPML this is the root tag */
+ 	MAPPINFO ("Pathway"),
+-	
+ 	/** a grouping of pathway elements */
+ 	GROUP ("Group"),
+-	
+ 	/** a pool of BioPAX definitions */
+ 	BIOPAX ("Biopax"),
+-	
+ 	/** similar to DataNode, but State is always
+ 	 * attached to - and specified relative to - another DataNode */
+ 	STATE ("State");
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/Engine.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/Engine.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(revision 3200)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/src/core/org/pathvisio/Engine.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(working copy)
+@@ -47,7 +47,7 @@
+ 	private VPathway vPathway; // may be null
+ 	//TODO: standalone below is a hack to make Converter work
+ 	private Pathway standalone = null; // only used when vPathway is null
+-	private VPathwayWrapper wrapper; // may also be null in case you
++	public VPathwayWrapper wrapper; // may also be null in case you
+ 									 // don't need to interact with
+ 									 // the pathway.
+ 
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/MyShapes.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/MyShapes.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(revision 0)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/MyShapes.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3206)
+@@ -0,0 +1,65 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2009 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++package org.pathvisio.plugins;
++
++import java.awt.geom.GeneralPath;
++
++import org.pathvisio.model.LineType;
++import org.pathvisio.model.ShapeType;
++import org.pathvisio.view.ArrowShape;
++import org.pathvisio.view.ShapeRegistry;
++
++/**
++ * User-defined shapes example
++ */
++public class MyShapes
++{
++	public static final LineType MY_LINE = LineType.create ("my-line", "Arrow");
++    public static final ShapeType MY_SHAPE = ShapeType.create ("my-shape", null);
++
++    public static void registerShapes()
++	{
++		ShapeRegistry.registerShape ("my-shape", getMyShape());
++		ShapeRegistry.registerArrow (MY_LINE.getName(), getMyLine(), ArrowShape.FillType.OPEN, 9);
++	}
++    
++    static private java.awt.Shape getMyLine ()
++    {
++    	GeneralPath path = new GeneralPath();
++		path.moveTo (0, 0);
++		path.lineTo (15, -10);
++		path.lineTo (30, 0);
++		path.lineTo (15, 10);
++		path.closePath();
++    	return path;
++    	
++    }
++
++	static private java.awt.Shape getMyShape ()
++	{
++		GeneralPath path = new GeneralPath();
++		path.moveTo(30, 0);
++		path.lineTo(50, 60);
++		path.lineTo(0, 20);
++		path.lineTo(60, 20);
++		path.lineTo(10, 60);
++		path.closePath();
++		return path;
++	}
++
++
++}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/TestDropDownPlugin.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/TestDropDownPlugin.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(revision 0)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/org/pathvisio/plugins/TestDropDownPlugin.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3223)
+@@ -0,0 +1,67 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2009 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++package org.pathvisio.plugins;
++
++import com.mammothsoftware.frwk.ddb.DropDownButton;
++
++import javax.swing.Action;
++
++import org.pathvisio.Engine;
++import org.pathvisio.gui.swing.CommonActions;
++import org.pathvisio.gui.swing.PvDesktop;
++import org.pathvisio.model.ConnectorType;
++import org.pathvisio.model.LineStyle;
++import org.pathvisio.model.LineType;
++import org.pathvisio.plugin.Plugin;
++import org.pathvisio.view.DefaultTemplates;
++
++
++/**
++ * A example of adding user-defined shapes (in MyShapes.java) to the drop-down menu.
++ */
++public class TestDropDownPlugin implements Plugin
++{
++	private PvDesktop desktop;
++
++	public void init(PvDesktop desktop)
++	{
++		this.desktop = desktop;
++		
++		// register user defined shapes
++		MyShapes.registerShapes();
++		
++		// define actions for the user-defined shapes
++		Engine e = desktop.getSwingEngine().getEngine();
++		Action[] aa = new Action[] {
++				new CommonActions.NewElementAction(e, new DefaultTemplates.LineTemplate(
++						"My Line", LineStyle.SOLID, LineType.LINE, MyShapes.MY_LINE, ConnectorType.STRAIGHT)
++				),
++				new CommonActions.NewElementAction(e, new DefaultTemplates.ShapeTemplate(MyShapes.MY_SHAPE)),
++		};		
++		
++		// the drop-down memu
++		DropDownButton lineButton = desktop.getSwingEngine().getApplicationPanel().getItemsDropDown();
++
++		// add buttons to the drop-down menu
++		desktop.getSwingEngine().getApplicationPanel().addButtons(aa, lineButton, 6, "User Defined");
++		
++		// add buttons to the objects tab
++		desktop.getSwingEngine().getApplicationPanel().getObjectsPane().addButtons(aa, "User Defined", 10);
++	}
++
++	public void done() {}	
++}
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/TestDropDown.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+
+Property changes on: D:\Seagate Backup\home\eclipse\pathvisio\gsoc-liubing\plugins\TestDropDown\TestDropDown.jar
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/build.xml
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/build.xml	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(revision 0)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/TestDropDown/build.xml	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3202)
+@@ -0,0 +1,61 @@
++<?xml version="1.0"?>
++<project name="TestDropDownPlugin" default="install" basedir=".">
++  
++  <property name="base.name" value="TestDropDown"/>
++  <property name="jar.name" value="${base.name}.jar"/>
++  <property name="pathvisio.dir" value="../.."/>
++
++  <property environment="env"/>
++  <property name="install.dir" value="${env.HOME}/.PathVisio/plugins/"/>
++  
++  <path id="project.class.path">
++	<path id="project.class.path">
++		<pathelement location="${pathvisio.dir}/pathvisio.jar"/>
++		<fileset dir="${pathvisio.dir}/lib">
++			<include name="**/*.jar"/>
++		</fileset>
++	</path>
++  </path>
++  
++  <target name="prepare">
++	<mkdir dir="build"/>
++
++	<fail message="Can't find ${pathvisio.dir}/pathvisio.jar, please specify the path to pathvisio with -Dpathvisio.dir=....">
++		<condition>
++			<not><available file="${pathvisio.dir}/pathvisio.jar"/></not>
++		</condition>
++	</fail>
++  </target>
++  
++  <target name="build" depends="prepare">
++	<javac srcdir="."
++		   includes="**"
++		   debug="true"
++		   destdir="build">
++	  <classpath refid="project.class.path"/>
++	</javac>
++  </target>
++  
++  <target name="jar" depends="build">
++	<jar jarfile="${jar.name}">
++	<manifest>
++		<attribute name="PathVisio-Plugin-Class" value="org.pathvisio.plugins.TestDropDownPlugin"/>
++	</manifest>
++	  <fileset dir="build" includes="**/*.class"/>
++	</jar>
++  </target>
++
++  <target name="install" depends="jar">
++	<copy file="${jar.name}"
++		  toDir="${install.dir}"/>
++  </target>
++
++  <target name="clean">
++	<delete dir="build"/>
++  </target>
++
++  <target name="dist-clean" depends="clean">
++	<delete file="${jar.name}"/>
++  </target>
++
++</project>
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/ColorByExpression.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/ColorByExpression.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/ColorByExpression.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -19,7 +19,6 @@
+ import java.awt.Color;
+ import java.awt.Component;
+ import java.awt.Dimension;
+-import java.awt.Font;
+ import java.awt.Graphics2D;
+ import java.awt.Image;
+ import java.awt.Paint;
+@@ -228,26 +227,15 @@
+ 	}
+ 
+ 	public void visualizeOnDrawing(Graphics g, Graphics2D g2d) {
+-		if(g instanceof GeneProduct)
+-		{
+-			if(useSamples.size() == 0) return; //Nothing to draw
+-	
+-			GeneProduct gp = (GeneProduct) g;
+-	
+-			Shape da = getVisualization().provideDrawArea(this, g);
+-			Rectangle area = da.getBounds();
+-	
+-			drawArea(gp, area, g2d);
+-		}
+-		else if (g instanceof Legend && getVisualization().isShowLegend())
+-		{
+-			Legend l = (Legend)g;
+-			Rectangle2D area = l.getVBounds();
+-			double zoomFactor = l.getDrawing().getZoomFactor();
+-			Font f = l.getVFont();
+-			g2d.setFont(f);
+-			LegendPanel.drawVisualization(getVisualization(), csm, g2d, area, zoomFactor);
+-		}
++		if(!(g instanceof GeneProduct)) return;
++		if(useSamples.size() == 0) return; //Nothing to draw
++
++		GeneProduct gp = (GeneProduct) g;
++
++		Shape da = getVisualization().provideDrawArea(this, g);
++		Rectangle area = da.getBounds();
++
++		drawArea(gp, area, g2d);
+ 	}
+ 
+ 	void drawArea(final GeneProduct gp, Rectangle area, Graphics2D g2d) {
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/LegendPanel.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/LegendPanel.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/plugins/LegendPanel.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -66,8 +66,7 @@
+ 	public void paintComponent(Graphics g)
+ 	{
+ 		super.paintComponent(g);
+-		drawVisualization (visualizationManager.getActiveVisualization(), visualizationManager.getColorSetManager(), 
+-				(Graphics2D)g, new Rectangle2D.Double(0, 0, 100, 100), 1.0);
++		drawVisualization (visualizationManager, (Graphics2D)g, new Rectangle2D.Double(0, 0, 100, 100), 1.0);
+ 	}
+ 
+ 	/**
+@@ -80,13 +79,15 @@
+ 	}
+ 
+ 
+-	public static void drawVisualization(Visualization v, ColorSetManager colorSetManager, Graphics2D g, Rectangle2D area, double zoomFactor)
++	public static void drawVisualization(VisualizationManager visualizationManager, Graphics2D g, Rectangle2D area, double zoomFactor)
+ 	{
++		Visualization v = visualizationManager.getActiveVisualization();
+ 		if (v == null) return;
+ 
+ 		double xpos = (int) (zoomFactor * MARGIN_LEFT + area.getMinX());
+ 		double ypos = (int) (zoomFactor * MARGIN_TOP + area.getMinY());
+ 
++		ColorSetManager colorSetManager = visualizationManager.getColorSetManager();
+ 		boolean advanced = colorSetManager.getColorSets().size() > 1;
+ 
+ 		Set<ColorSet> usedColorSets = new HashSet<ColorSet>();
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/gui/VisualizationPanel.java
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/gui/VisualizationPanel.java	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/plugins/visualization/org/pathvisio/visualization/gui/VisualizationPanel.java	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -87,8 +87,7 @@
+ 
+ 		ckLegend = new JCheckBox("Show legend");
+ 		ckLegend.setActionCommand(ACTION_SHOWLEGEND);
+-		Visualization v = visMgr.getActiveVisualization();
+-		if (v != null) ckLegend.setSelected(v.isShowLegend());
++		ckLegend.setSelected(visMgr.isShowLegend());
+ 		ckLegend.addActionListener(this);
+ 		
+ 		methods = new JPanel();
+@@ -142,10 +141,7 @@
+ 		} 
+ 		else if (ACTION_SHOWLEGEND.equals(action))
+ 		{
+-			Visualization v = visMgr.getActiveVisualization();
+-			if(v != null) {
+-				v.setShowLegend(ckLegend.isSelected());
+-			}
++			visMgr.setShowLegend(ckLegend.isSelected());
+ 		}
+ 	}
+ 
+@@ -170,7 +166,6 @@
+ 					builder.append(mp);
+ 					builder.nextLine();
+ 				}
+-				ckLegend.setSelected(v.isShowLegend());
+ 			}
+ 		} else {
+ 			visCombo.setModel(new DefaultComboBoxModel());
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newinteractionmenu.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newribosome.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newcella.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/neworgana.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/neworganb.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/neworganc.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmodification.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmy-shape.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newroundedrectangle.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmim-interaction.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmim-degradation.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newbranching left.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newproteincomplex.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newbinding.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newcovalent bond.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newitems.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmim-phosphorylated.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newconversion.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newnecessary stimulation.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newhexagon.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newcatalysis.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newmy line.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newgap.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newcleavage.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newpentagon.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newvesicle.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newinhibition.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newtriangle.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newstimulation.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newbranching right.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/resources/newtranscription-translation.gif
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/build.xml
+===================================================================
+--- D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/build.xml	(.../D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing)	(working copy)
++++ D:/Seagate Backup/home/eclipse/pathvisio/gsoc-liubing/build.xml	(.../http://svn.bigcat.unimaas.nl/pathvisio/branches/gsoc-liubing)	(revision 3191)
+@@ -504,8 +504,8 @@
+ 				<include name="lib/org.bridgedb.rdb.jar"/>
+ 				<include name="lib/org.bridgedb.webservice.bridgerest.jar"/>
+ 				<include name="lib/org.bridgedb.bio.jar"/>
+-				<include name="lib/org.bridgedb.rdb.construct.jar"/>
+ 				<include name="lib/commons-math-2.0.jar"/>
++<!--				<include name="lib/paxtools/*.jar"/> -->
+ 				<include name="lib/resources.jar"/>
+ 				<include name="lib/swing-worker-1.1.jar"/>
+ 				<include name="lib/licenses/*"/>
